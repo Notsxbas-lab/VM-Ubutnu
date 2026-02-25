@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  web-panel:
+    build:
+      context: ./web-panel
+    container_name: vm-web-panel
+    ports:
+      - "3000:3000"  # Panel web accesible en http://localhost:3000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Acceso al Docker daemon
+      - ./web-panel:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    networks:
+      - vm-network
+
+# Nota: Las VMs de Ubuntu se crean dinámicamente desde el panel web
+# Ya no es necesario definirlas aquí manualmente
+
+networks:
+  vm-network:
+    driver: bridge
