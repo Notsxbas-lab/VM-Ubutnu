@@ -7,8 +7,8 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 const docker = new Docker({ socketPath: '/var/run/docker.sock' });
-const PORT = 3000;
-const JWT_SECRET = 'tu-super-secreto-cambiar-en-produccion-2025';
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'tu-super-secreto-cambiar-en-produccion-2025';
 
 // Cargar usuarios
 const usersFilePath = path.join(__dirname, 'users.json');
@@ -518,6 +518,6 @@ function calculateMemoryUsage(stats) {
     return `${used.toFixed(2)} MB / ${limit.toFixed(2)} MB`;
 }
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Panel web ejecutándose en http://localhost:${PORT}`);
 });

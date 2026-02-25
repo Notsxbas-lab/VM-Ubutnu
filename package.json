@@ -1,0 +1,22 @@
+{
+  "name": "vm-panel-root",
+  "version": "1.0.0",
+  "description": "VM Management Panel",
+  "main": "web-panel/server.js",
+  "scripts": {
+    "start": "node web-panel/server.js",
+    "dev": "nodemon web-panel/server.js"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "dockerode": "^4.0.2",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
