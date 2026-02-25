@@ -6,9 +6,18 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const docker = new Docker({ socketPath: '/var/run/docker.sock' });
+let docker = null;
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-super-secreto-cambiar-en-produccion-2025';
+
+// Inicializar Docker de forma segura
+try {
+    docker = new Docker({ socketPath: '/var/run/docker.sock' });
+    console.log('Docker conectado');
+} catch (err) {
+    console.warn('Docker no disponible (normal en Render):', err.message);
+    docker = null;
+}
 
 // Cargar usuarios
 const usersFilePath = path.join(__dirname, 'users.json');
@@ -207,6 +216,9 @@ app.get('/', (req, res) => {
 // Listar todas las VMs (requiere autenticación)
 app.get('/api/vms', verifyToken, async (req, res) => {
     try {
+        if (!docker) {
+            return res.json({ vms: [], success: true, isAdmin: false, warning: 'Docker no disponible en este servidor' });
+        }
         const containers = await docker.listContainers({ all: true });
         let vms = containers
             .filter(c => c.Names.some(name => name.includes(VM_PREFIX)))
@@ -290,6 +302,9 @@ app.get('/api/vm/:name/status', verifyToken, async (req, res) => {
 // Crear nueva VM
 app.post('/api/vm/create', verifyToken, verifyAdmin, async (req, res) => {
     try {
+        if (!docker) {
+            return res.status(503).json({ error: 'Docker no disponible en este servidor', success: false });
+        }
         const { name, cpus, memory } = req.body;
         
         if (!name || name.trim() === '') {
@@ -377,6 +392,9 @@ app.post('/api/vm/create', verifyToken, verifyAdmin, async (req, res) => {
 // Iniciar VM
 app.post('/api/vm/:name/start', verifyToken, verifyVMAccess, async (req, res) => {
     try {
+        if (!docker) {
+            return res.status(503).json({ error: 'Docker no disponible', success: false });
+        }
         const container = docker.getContainer(req.vmName);
         await container.start();
         res.json({ message: 'VM iniciada correctamente', success: true });
@@ -388,6 +406,9 @@ app.post('/api/vm/:name/start', verifyToken, verifyVMAccess, async (req, res) =>
 // Detener VM
 app.post('/api/vm/:name/stop', verifyToken, verifyVMAccess, async (req, res) => {
     try {
+        if (!docker) {
+            return res.status(503).json({ error: 'Docker no disponible', success: false });
+        }
         const container = docker.getContainer(req.vmName);
         await container.stop();
         res.json({ message: 'VM detenida correctamente', success: true });
@@ -399,6 +420,9 @@ app.post('/api/vm/:name/stop', verifyToken, verifyVMAccess, async (req, res) => 
 // Reiniciar VM
 app.post('/api/vm/:name/restart', verifyToken, verifyVMAccess, async (req, res) => {
     try {
+        if (!docker) {
+            return res.status(503).json({ error: 'Docker no disponible', success: false });
+        }
         const container = docker.getContainer(req.vmName);
         await container.restart();
         res.json({ message: 'VM reiniciada correctamente', success: true });
@@ -410,6 +434,9 @@ app.post('/api/vm/:name/restart', verifyToken, verifyVMAccess, async (req, res) 
 // Eliminar VM (solo admin)
 app.delete('/api/vm/:name', verifyToken, verifyAdmin, async (req, res) => {
     try {
+        if (!docker) {
+            return res.status(503).json({ error: 'Docker no disponible', success: false });
+        }
         const vmName = req.params.name.startsWith(VM_PREFIX) ? req.params.name : VM_PREFIX + req.params.name;
         const container = docker.getContainer(vmName);
         
@@ -432,6 +459,9 @@ app.delete('/api/vm/:name', verifyToken, verifyAdmin, async (req, res) => {
 // Actualizar configuración de VM
 app.post('/api/vm/:name/config', verifyToken, verifyVMAccess, async (req, res) => {
     try {
+        if (!docker) {
+            return res.status(503).json({ error: 'Docker no disponible', success: false });
+        }
         const { cpus, memory } = req.body;
         const container = docker.getContainer(req.vmName);
         
@@ -452,6 +482,9 @@ app.post('/api/vm/:name/config', verifyToken, verifyVMAccess, async (req, res) =
 // Obtener logs de VM
 app.get('/api/vm/:name/logs', verifyToken, verifyVMAccess, async (req, res) => {
     try {
+        if (!docker) {
+            return res.status(503).json({ error: 'Docker no disponible', success: false });
+        }
         const container = docker.getContainer(req.vmName);
         const logs = await container.logs({
             stdout: true,
