@@ -1,4 +1,4 @@
-const STATIC_MODE = true;
+const STATIC_MODE = false; // Modo de autenticación activo
 
 if (STATIC_MODE) {
     window.addEventListener('load', () => {

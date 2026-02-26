@@ -1,5 +1,6 @@
-const API_URL = null;
-const STATIC_MODE = true;
+// Detectar automáticamente el servidor API
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api';
+const STATIC_MODE = false; // Desactivar modo estático - ahora usamos el API real
 
 // Estado global del usuario actual
 let currentUser = null;

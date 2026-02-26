@@ -551,6 +551,20 @@ function calculateMemoryUsage(stats) {
     return `${used.toFixed(2)} MB / ${limit.toFixed(2)} MB`;
 }
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', docker: docker ? 'available' : 'unavailable' });
+});
+
+// Manejo de errores global
+app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Error interno del servidor', success: false });
+});
+
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Panel web ejecutándose en http://localhost:${PORT}`);
+    console.log(`✓ Panel web iniciado en http://0.0.0.0:${PORT}`);
+    console.log(`✓ Puerto: ${PORT}`);
+    console.log(`✓ Files estáticos desde: ${path.join(__dirname, 'public')}`);
+    console.log(`✓ Docker: ${docker ? 'conectado' : 'no disponible'}`);
 });
