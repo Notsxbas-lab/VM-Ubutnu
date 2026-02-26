@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = null;
+const STATIC_MODE = true;
 
 // Estado global del usuario actual
 let currentUser = null;
@@ -29,12 +30,27 @@ async function handleUnauthorized() {
 
 // Verificar autenticación al cargar la página
 document.addEventListener('DOMContentLoaded', async () => {
+    if (STATIC_MODE) {
+        renderStaticMode();
+        return;
+    }
     await checkAuthentication();
     updateUserUI();
     loadVMList();
     // Actualizar cada 5 segundos
     setInterval(loadVMList, 5000);
 });
+
+function renderStaticMode() {
+    const userInfoElement = document.getElementById('userInfo');
+    if (userInfoElement) {
+        userInfoElement.innerHTML = '<span>Modo estatico: backend no configurado</span>';
+    }
+    const vmList = document.getElementById('vmList');
+    if (vmList) {
+        vmList.innerHTML = '<div class="loading">Panel en modo estatico. No hay datos de VMs.</div>';
+    }
+}
 
 // Verificar si el usuario está autenticado
 async function checkAuthentication() {
