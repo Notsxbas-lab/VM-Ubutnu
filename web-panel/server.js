@@ -1,21 +1,33 @@
 const express = require('express');
-const Docker = require('dockerode');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
-const app = express();
+let Docker = null;
 let docker = null;
+
+try {
+    Docker = require('dockerode');
+} catch (err) {
+    console.warn('dockerode not available');
+}
+
+const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'tu-super-secreto-cambiar-en-produccion-2025';
 
-// Inicializar Docker de forma segura
-try {
-    docker = new Docker({ socketPath: '/var/run/docker.sock' });
-    console.log('Docker conectado');
-} catch (err) {
-    console.warn('Docker no disponible (normal en Render):', err.message);
+// Inicializar Docker de forma segura DESPUÉS de que express esté listo
+if (Docker) {
+    try {
+        docker = new Docker({ socketPath: '/var/run/docker.sock' });
+        console.log('[INIT] Docker conectado');
+    } catch (err) {
+        console.warn('[INIT] Docker no disponible:', err.message);
+        docker = null;
+    }
+} else {
+    console.warn('[INIT] dockerode module not available');
     docker = null;
 }
 

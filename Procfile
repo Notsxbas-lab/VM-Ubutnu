@@ -1,1 +1,1 @@
-web: node web-panel/server.js
+web: npm start
