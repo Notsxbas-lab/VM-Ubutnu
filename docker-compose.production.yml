@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  web-panel:
+    build:
+      context: ./web-panel
+      dockerfile: Dockerfile
+    container_name: vm-web-panel-prod
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./web-panel/users.json:/app/users.json
+      - ./web-panel/public:/app/public
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - vm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  vm-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
